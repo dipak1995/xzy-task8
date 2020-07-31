@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!--spring配置文件： 声明service，dao，工具类等对象-->
+
+<!--    <context:property-placeholder location="classpath:jdbc.properties" />-->
+<!--    <context:property-placeholder location="classpath:init.properties" />-->
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:init.properties</value>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--声明数据源，连接数据库-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <!--SqlSessionFactoryBean创建SqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation"  value="classpath:mybatis.xml" />
+    </bean>
+    
+    <!--声明mybatis的扫描器，创建dao对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+        <property name="basePackage" value="com.ptt.dao" />
+    </bean>
+
+    <!-- RMI服务端 -->
+    <!-- RMI服务端远程接口实现类 -->
+<!--    <bean name="rmiserver1" class="com.ptt.service.BmbServiceImpl"/>-->
+<!--&lt;!&ndash;    <bean name="serverTest1" class="org.springframework.remoting.rmi.RmiServiceExporter">&ndash;&gt;-->
+<!--    <bean class="com.ptt.rmi.RmiService">-->
+<!--        &lt;!&ndash; 将远程接口实现类对象设置到RMI服务中 &ndash;&gt;-->
+<!--        <property name="service" ref="rmiserver1"/>-->
+<!--        &lt;!&ndash; 设置RMI服务名，为RMI客户端依据此服务名获取远程接口实现类对象引用奠定基础 &ndash;&gt;-->
+<!--        <property name="serviceName" value="BmbServiceImpl"/>-->
+<!--        &lt;!&ndash; 将远程接口设置为RMI服务接口 &ndash;&gt;-->
+<!--        <property name="serviceInterface" value="com.ptt.service.BmbService"/>-->
+<!--        <property name="registryHost" value="localhost"/>-->
+<!--        &lt;!&ndash; service本地实现，serviceName对外提供的名称对外提供的名称，registyPort开启端口 &ndash;&gt;-->
+<!--        &lt;!&ndash; 注册端口号 &ndash;&gt;-->
+<!--        <property name="registryPort" value="1021"/>-->
+<!--        <property name="servicePort" value="1021"/>&lt;!&ndash;不指定就随机 &ndash;&gt;-->
+<!--    </bean>-->
+
+    <bean name="rmiserver2" class="com.ptt.service.BmbServiceImpl"/>
+<!--    <bean name="serverTest2" class="org.springframework.remoting.rmi.RmiServiceExporter">-->
+    <bean class="com.ptt.rmi.RmiService">
+        <!-- 将远程接口实现类对象设置到RMI服务中 -->
+        <property name="service" ref="rmiserver2"/>
+        <!-- 设置RMI服务名，为RMI客户端依据此服务名获取远程接口实现类对象引用奠定基础 -->
+        <property name="serviceName" value="BmbServiceImpl"/>
+        <!-- 将远程接口设置为RMI服务接口 -->
+        <property name="serviceInterface" value="com.ptt.service.BmbService"/>
+        <property name="registryHost" value="localhost"/>
+        <!-- service本地实现，serviceName对外提供的名称对外提供的名称，registyPort开启端口 -->
+        <property name="registryPort" value="1022"/>
+        <property name="servicePort" value="1022"/><!--不指定就随机 -->
+    </bean>
+
+    <!-- 引入到spring配置文件中 memcachedContent.xml -->
+    <import resource="memcachedContent.xml"/>
+
+    <!--声明service的注解@Service所在的包名位置-->
+    <context:component-scan base-package="com.ptt.*" />
+
+    <!--事务配置：注解的配置， aspectj的配置-->
+</beans>
